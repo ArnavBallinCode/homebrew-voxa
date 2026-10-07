@@ -12,6 +12,11 @@ cask "voxa" do
 
   app "Voxa.app"
 
+  postflight do
+    system_command "/usr/bin/xattr",
+                   args: ["-cr", "#{appdir}/Voxa.app"]
+  end
+
   zap trash: [
     "~/Library/Application Support/com.arnav.voxa",
     "~/Library/Caches/com.arnav.voxa",
