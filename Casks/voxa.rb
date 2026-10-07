@@ -1,6 +1,6 @@
 cask "voxa" do
-  version "0.1.0"
-  sha256 "5b5e2551a841a6e412caa3d3cd9931ea0e8c1f3886b50c773bd6571c3a765fa7"
+  version "0.1.11"
+  sha256 "fd1e7de6b9e8397bef4049054e7e23bb60736a9a02c0562273315ec588e284fe"
 
   url "https://github.com/ArnavBallinCode/voxa/releases/download/v#{version}/Voxa_#{version}_aarch64.dmg"
   name "Voxa"
