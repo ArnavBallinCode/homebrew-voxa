@@ -33,10 +33,10 @@ jobs:
           
           echo "Latest release version: $VERSION"
           
-          CURRENT_VERSION=$(grep -E 'version "' Casks/voxa.rb | head -n1 | sed -E 's/.*version "([^"]+)".*//')
+          CURRENT_VERSION=$(awk -F'"' '/version "/ {print $2; exit}' Casks/voxa.rb)
           echo "Current cask version: $CURRENT_VERSION"
           
-          ASSET_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name | test("Voxa_.*_aarch64\.dmg$")) | .browser_download_url')
+          ASSET_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name | test("Voxa_.*_aarch64\\.dmg$")) | .browser_download_url')
           
           if [ -z "$ASSET_URL" ] || [ "$ASSET_URL" = "null" ]; then
             echo "No aarch64 DMG asset found in release $TAG_NAME. Exiting."
@@ -50,7 +50,7 @@ jobs:
           
           echo "Calculated SHA256: $SHA256"
           
-          CURRENT_SHA=$(grep -E 'sha256 "' Casks/voxa.rb | head -n1 | sed -E 's/.*sha256 "([^"]+)".*//')
+          CURRENT_SHA=$(awk -F'"' '/sha256 "/ {print $2; exit}' Casks/voxa.rb)
           
           if [ "$CURRENT_VERSION" = "$VERSION" ] && [ "$CURRENT_SHA" = "$SHA256" ]; then
             echo "Cask is already up to date ($VERSION). Nothing to commit."
@@ -60,33 +60,34 @@ jobs:
           echo "Updating Casks/voxa.rb to version $VERSION..."
           
           cat <<EOF > Casks/voxa.rb
-cask "voxa" do
-  version "$VERSION"
-  sha256 "$SHA256"
+          cask "voxa" do
+            version "$VERSION"
+            sha256 "$SHA256"
 
-  url "https://github.com/ArnavBallinCode/voxa/releases/download/v#{version}/Voxa_#{version}_aarch64.dmg"
-  name "Voxa"
-  desc "On-device AI meeting and interpretation console (VoxBento Local)"
-  homepage "https://voxbento.org/local"
+            url "https://github.com/ArnavBallinCode/voxa/releases/download/v#{version}/Voxa_#{version}_aarch64.dmg"
+            name "Voxa"
+            desc "On-device AI meeting and interpretation console (VoxBento Local)"
+            homepage "https://voxbento.org/local"
 
-  auto_updates false
-  depends_on macos: :sonoma
+            auto_updates false
+            depends_on macos: :sonoma
 
-  app "Voxa.app"
+            app "Voxa.app"
 
-  postflight do
-    system_command "/usr/bin/xattr",
-                   args: ["-cr", "#{appdir}/Voxa.app"]
-  end
+            postflight do
+              system_command "/usr/bin/xattr",
+                             args: ["-cr", "#{appdir}/Voxa.app"]
+            end
 
-  zap trash: [
-    "~/Library/Application Support/com.arnav.voxa",
-    "~/Library/Caches/com.arnav.voxa",
-    "~/Library/Preferences/com.arnav.voxa.plist",
-    "~/Library/Saved Application State/com.arnav.voxa.savedState",
-  ]
-end
-EOF
+            zap trash: [
+              "~/Library/Application Support/com.arnav.voxa",
+              "~/Library/Caches/com.arnav.voxa",
+              "~/Library/Preferences/com.arnav.voxa.plist",
+              "~/Library/Saved Application State/com.arnav.voxa.savedState",
+            ]
+          end
+          EOF
+          sed -i -E 's/^          //' Casks/voxa.rb
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
